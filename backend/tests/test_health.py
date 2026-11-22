@@ -15,6 +15,11 @@ class _FailingPool:
         raise ConnectionError("database unavailable")
 
 
+class _UnusedEmbedder:
+    def embed(self, texts: object) -> list[list[float]]:
+        raise AssertionError("the health check does not embed")
+
+
 def _client(app: FastAPI) -> AsyncClient:
     return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
@@ -22,6 +27,7 @@ def _client(app: FastAPI) -> AsyncClient:
 async def test_health_ok_and_schema_has_no_approximate_index() -> None:
     settings = Settings(_env_file=None)
     app = create_app(settings)
+    app.state.embedder = _UnusedEmbedder()
     async with app.router.lifespan_context(app):
         async with _client(app) as client:
             response = await client.get("/health")
@@ -74,6 +80,7 @@ async def test_health_ok_and_schema_has_no_approximate_index() -> None:
 async def test_health_is_unavailable_when_the_database_fails() -> None:
     app = create_app(Settings(_env_file=None))
     app.state.pool = _FailingPool()
+    app.state.embedder = _UnusedEmbedder()
     async with app.router.lifespan_context(app):
         async with _client(app) as client:
             response = await client.get("/health")

@@ -9,6 +9,8 @@ dependencies = [
   "psycopg[binary,pool]>=3.2.4",
   "pydantic-settings>=2.7.0",
   "pymupdf>=1.24,<2",
+  "python-multipart>=0.0.34",
+  "sentence-transformers>=6.3.0",
   "uvicorn>=0.34.0",
 ]
 
